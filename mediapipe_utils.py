@@ -3,7 +3,7 @@ import mediapipe as mp
 import numpy as np
 import time
 
-from world.utils import ImgUitls
+from utils import ImgUitls
 
 """
 Mediapipe Homepage: https://google.github.io/mediapipe/getting_started/python

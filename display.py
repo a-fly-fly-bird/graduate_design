@@ -12,7 +12,7 @@ import numpy as np
 import sys
 import mediapipe as mp
 
-from world.mediapipe_utils import HeadPoseEstimation
+from mediapipe_utils import HeadPoseEstimation
 
 
 class Example(QWidget):
