@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import mediapipe as mp
 
 from PyQt6.QtCore import QThread, pyqtSignal
 

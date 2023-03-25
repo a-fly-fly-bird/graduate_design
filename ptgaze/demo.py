@@ -7,18 +7,24 @@ import cv2
 import numpy as np
 from omegaconf import DictConfig
 
+from PyQt6.QtCore import QThread, pyqtSignal
+
 from .common import Face, FacePartsName, Visualizer
 from .gaze_estimator import GazeEstimator
 from .utils import get_3d_face_model
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-class Demo:
+class Demo(QThread):
+    img_change_signal = pyqtSignal(np.ndarray)
     QUIT_KEYS = {27, ord('q')}
 
     def __init__(self, config: DictConfig):
+        super().__init__()
+        self._run_flag = True
         self.config = config
         self.gaze_estimator = GazeEstimator(config)
         face_model_3d = get_3d_face_model(config)
@@ -73,7 +79,8 @@ class Demo:
             self._process_image(frame)
 
             if self.config.demo.display_on_screen:
-                cv2.imshow('frame', self.visualizer.image)
+                # cv2.imshow('frame', self.visualizer.image)
+                self.img_change_signal.emit(self.visualizer.image)
         self.cap.release()
         if self.writer:
             self.writer.release()
