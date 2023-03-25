@@ -1,12 +1,12 @@
-import cv2
-import numpy as np
 import sys
 
-from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
-from PyQt6.QtGui import QPixmap, QImage
+import cv2
+import numpy as np
 from PyQt6.QtCore import pyqtSlot, Qt
+from PyQt6.QtGui import QPixmap, QImage
+from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
 
-from video_thread import VideoThread, OuterVideoThread
+from video_thread import OuterVideoThread
 
 
 class App(QWidget):
@@ -61,11 +61,11 @@ class App(QWidget):
         self.setWindowTitle('Driving Distraction Detection System')
 
         # create the video capture thread
-        self.thread = VideoThread()
+        # self.thread = VideoThread()
         # connect its signal to the update_image slot
-        self.thread.gaze_img_change_signal.connect(self.update_image)
+        # self.thread.gaze_img_change_signal.connect(self.update_image)
         # start the thread
-        self.thread.start()
+        # self.thread.start()
 
         self.outerThread = OuterVideoThread()
         self.outerThread.lane_img_change_signal.connect(self.update_lane_image)

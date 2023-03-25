@@ -1,5 +1,7 @@
-import sys
 import os
+import sys
+
+from PyQt6.QtWidgets import QApplication
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -17,6 +19,8 @@ from ptgaze.utils import (check_path_all, download_dlib_pretrained_model,
                           download_ethxgaze_model, download_mpiifacegaze_model,
                           download_mpiigaze_model, expanduser_all,
                           generate_dummy_camera_params)
+
+from display import App
 
 logger = logging.getLogger(__name__)
 
@@ -156,14 +160,15 @@ def main():
             download_ethxgaze_model()
 
     check_path_all(config)
-
     demo = Demo(config)
-    demo.img_change_signal.connect(a)
-    demo.run()
 
+    app = QApplication(sys.argv)
+    my_app = App()
+    demo.img_change_signal.connect(my_app.update_image)
+    demo.start()
+    my_app.show()
+    sys.exit(app.exec())
 
-def a():
-    print("Hello")
 
 if __name__ == "__main__":
     main()
