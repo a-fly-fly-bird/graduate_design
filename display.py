@@ -1,112 +1,31 @@
-# !/usr/bin/python
+import cv2
+import numpy as np
+import sys
 
-from PyQt6 import QtGui
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
 from PyQt6.QtGui import QPixmap, QImage
-import sys
-import cv2
-from PyQt6.QtCore import pyqtSignal, pyqtSlot, Qt, QThread
-import numpy as np
+from PyQt6.QtCore import pyqtSlot, Qt
 
-import numpy as np
-import sys
-import mediapipe as mp
+from video_thread import VideoThread, OuterVideoThread
 
-from mediapipe_utils import HeadPoseEstimation
-
-
-class Example(QWidget):
-
-    def __init__(self):
-        super().__init__()
-
-        self.initUI()
-
-    def initUI(self):
-        hbox = QHBoxLayout(self)
-
-        # 参考：https://stackoverflow.com/questions/34232632/convert-python-opencv-image-numpy-array-to-pyqt-qpixmap-image
-        cvImg = np.random.randint(low=1, high=255, size=(300, 300, 3), dtype=np.uint8)
-        height, width, channel = cvImg.shape
-        bytesPerLine = 3 * width
-        qImg = QImage(cvImg.data, width, height, bytesPerLine, QImage.Format.Format_RGB888)
-        # pixmap = QPixmap('sid.jpg')
-        pixmap = QPixmap(qImg)
-        lbl = QLabel(self)
-        lbl.setPixmap(pixmap)
-
-        hbox.addWidget(lbl)
-        self.setLayout(hbox)
-
-        self.move(300, 200)
-        self.setWindowTitle('Sid')
-        self.show()
-
-
-# https://gist.github.com/docPhil99/ca4da12c9d6f29b9cea137b617c7b8b1
-class VideoThread(QThread):
-    change_pixmap_signal = pyqtSignal(np.ndarray)
-
-    def __init__(self):
-        super().__init__()
-        self._run_flag = True
-
-    def run(self):
-        # capture from web cam
-        mp_drawing = mp.solutions.drawing_utils
-        mp_drawing_styles = mp.solutions.drawing_styles
-        pose_estimation = HeadPoseEstimation(mp_drawing, mp_drawing_styles)
-        cap = cv2.VideoCapture(0)
-        while self._run_flag:
-            ret, cv_img = cap.read()
-            if ret:
-                cv_img = pose_estimation.head_pose_estimation(cv_img)
-                self.change_pixmap_signal.emit(cv_img)
-        # shut down capture system
-        cap.release()
-
-    def stop(self):
-        """Sets run flag to False and waits for thread to finish"""
-        self._run_flag = False
-        self.wait()
-
-
-class OuterVideoThread(QThread):
-    lane_img_change_signal = pyqtSignal(np.ndarray)
-
-    def __init__(self):
-        super().__init__()
-        self._run_flag = True
-
-    def run(self):
-        # capture from web cam
-        mp_drawing = mp.solutions.drawing_utils
-        mp_drawing_styles = mp.solutions.drawing_styles
-        pose_estimation = HeadPoseEstimation(mp_drawing, mp_drawing_styles)
-        cap = cv2.VideoCapture(1)
-        while self._run_flag:
-            ret, cv_img = cap.read()
-            if ret:
-                cv_img = pose_estimation.head_pose_estimation(cv_img)
-                self.lane_img_change_signal.emit(cv_img)
-        # shut down capture system
-        cap.release()
-
-    def stop(self):
-        """Sets run flag to False and waits for thread to finish"""
-        self._run_flag = False
-        self.wait()
 
 class App(QWidget):
     def __init__(self):
         super().__init__()
-        self.outerThread = None
-        self.thread = None
+
+        self.screenRect = None
         self.screenwidth = None
         self.screenheight = None
-        self.screenRect = None
+
+        self.display_height = None
+        self.display_width = None
+
         self.lane_img = None
         self.gaze_img = None
+
+        self.outerThread = None
+        self.thread = None
+
         self.init_ui()
 
     def init_ui(self):
@@ -114,51 +33,37 @@ class App(QWidget):
         self.screenRect = QApplication.primaryScreen().geometry()
         self.screenheight = self.screenRect.height()
         self.screenwidth = self.screenRect.width()
-        self.disply_width = self.screenwidth // 3
+        self.display_width = self.screenwidth // 3
         self.display_height = self.screenheight // 3
+
         lane_text = QLabel("Lane Detection")
         gaze_text = QLabel("Gaze Estimation")
 
-        self.lane_img = QLabel(self)
-        filename = "/Users/lucas/Downloads/iShot_2023-03-25_13.52.27.png"
-        pixmap = QPixmap(filename)  # 按指定路径找到图片
-        self.lane_img.setMaximumSize(600, 400)
-        self.lane_img.setMinimumSize(300, 200)
-        self.lane_img.setScaledContents(True)  # 让图片自适应label大小
-        self.lane_img.setPixmap(pixmap)  # 在label上显示图片
+        self.lane_img = self.setDefaultImgLabel()
+        self.gaze_img = self.setDefaultImgLabel()
 
-        self.gaze_img = QLabel(self)
-        filename = "/Users/lucas/Downloads/iShot_2023-03-25_13.52.27.png"
-        pixmap = QPixmap(filename)  # 按指定路径找到图片
-        self.gaze_img.setMaximumSize(600, 400)
-        self.gaze_img.setMinimumSize(300, 200)
-        self.gaze_img.setScaledContents(True)  # 让图片自适应label大小
-        self.gaze_img.setPixmap(pixmap)  # 在label上显示图片
+        vbox1 = QVBoxLayout()
+        vbox1.addWidget(lane_text)
+        vbox1.addWidget(self.lane_img)
+        vbox1.addStretch(0)
 
-        vbox = QVBoxLayout()
-        vbox.addWidget(lane_text)
-        # vbox.addStretch(1)
-        vbox.addWidget(self.lane_img)
-        vbox.addStretch(0)
+        vbox2 = QVBoxLayout()
+        vbox2.addWidget(gaze_text)
+        vbox2.addWidget(self.gaze_img)
+        vbox2.addStretch(0)
 
-        vvbox = QVBoxLayout()
-        vvbox.addWidget(gaze_text)
-        # vvbox.addStretch(1)
-        vvbox.addWidget(self.gaze_img)
-        vvbox.addStretch(0)
+        hbox1 = QHBoxLayout()
+        hbox1.addLayout(vbox1)
+        hbox1.addLayout(vbox2)
 
-        hbox = QHBoxLayout()
-        hbox.addLayout(vbox)
-        hbox.addLayout(vvbox)
-
-        self.setLayout(hbox)
+        self.setLayout(hbox1)
         # self.setGeometry(0, 0, self.screenwidth, self.screenheight)
         self.setWindowTitle('Driving Distraction Detection System')
 
         # create the video capture thread
         self.thread = VideoThread()
         # connect its signal to the update_image slot
-        self.thread.change_pixmap_signal.connect(self.update_image)
+        self.thread.gaze_img_change_signal.connect(self.update_image)
         # start the thread
         self.thread.start()
 
@@ -166,7 +71,15 @@ class App(QWidget):
         self.outerThread.lane_img_change_signal.connect(self.update_lane_image)
         self.outerThread.start()
 
-        self.show()
+    def setDefaultImgLabel(self):
+        label = QLabel(self)
+        filename = 'assets/default.jpg'
+        pixmap = QPixmap(filename)  # 按指定路径找到图片
+        label.setMaximumSize(600, 400)
+        label.setMinimumSize(300, 200)
+        label.setScaledContents(True)  # 让图片自适应label大小
+        label.setPixmap(pixmap)  # 在label上显示图片
+        return label
 
     def closeEvent(self, event):
         self.thread.stop()
@@ -189,8 +102,8 @@ class App(QWidget):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
-        convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.disply_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
+        convert_to_Qt_format = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format.Format_RGB888)
+        p = convert_to_Qt_format.scaled(self.display_width, self.display_height, Qt.AspectRatioMode.KeepAspectRatio)
         return QPixmap.fromImage(p)
 
 

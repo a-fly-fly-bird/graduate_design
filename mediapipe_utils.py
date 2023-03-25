@@ -25,6 +25,7 @@ Args:
 
 比如connections=self.mp_face_mesh.FACEMESH_TESSELATION,在https://github.com/google/mediapipe/blob
 /33d683c67100ef3db37d9752fcf65d30bea440c4/mediapipe/python/solutions/face_mesh_connections.py里面。
+
 内容格式如下：
 FACEMESH_LEFT_EYE = frozenset([(263, 249), (249, 390), (390, 373), (373, 374),
                                (374, 380), (380, 381), (381, 382), (382, 362),
