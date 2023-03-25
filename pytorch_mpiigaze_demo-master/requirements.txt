@@ -1,0 +1,11 @@
+dlib
+face_alignment
+mediapipe-silicon
+numpy
+omegaconf
+opencv-python
+pyyaml
+scipy
+timm
+torch
+torchvision

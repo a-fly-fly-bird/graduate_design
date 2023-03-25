@@ -35,7 +35,7 @@ FACEMESH_LEFT_EYE = frozenset([(263, 249), (249, 390), (390, 373), (373, 374),
 
 
 class FaceMesh:
-    def __init__(self, mp_drawing, mp_drawing_styles):
+    def __init__(self, mp_drawing=mp.solutions.drawing_utils, mp_drawing_styles=mp.solutions.drawing_styles):
         self.mp_face_mesh = mp.solutions.face_mesh
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
@@ -92,7 +92,7 @@ class FaceMesh:
 
 
 class Hands:
-    def __init__(self, mp_drawing, mp_drawing_styles):
+    def __init__(self, mp_drawing=mp.solutions.drawing_utils, mp_drawing_styles=mp.solutions.drawing_styles):
         self.mp_hands = mp.solutions.hands
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
@@ -129,7 +129,7 @@ class Hands:
 
 
 class Selfie:
-    def __init__(self, mp_drawing, mp_drawing_styles):
+    def __init__(self, mp_drawing=mp.solutions.drawing_utils, mp_drawing_styles=mp.solutions.drawing_styles):
         self.mp_selfie_segmentation = mp.solutions.selfie_segmentation
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
@@ -174,7 +174,7 @@ class Selfie:
 
 
 class Holistic:
-    def __init__(self, mp_drawing, mp_drawing_styles):
+    def __init__(self, mp_drawing=mp.solutions.drawing_utils, mp_drawing_styles=mp.solutions.drawing_styles):
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
         self.mp_holistic = mp.solutions.holistic
@@ -216,7 +216,7 @@ class Holistic:
 
 
 class HeadPoseEstimation:
-    def __init__(self, mp_drawing, mp_drawing_styles):
+    def __init__(self, mp_drawing=mp.solutions.drawing_utils, mp_drawing_styles=mp.solutions.drawing_styles):
         self.mp_drawing = mp_drawing
         self.mp_drawing_styles = mp_drawing_styles
         self.drawing_spec = self.mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
