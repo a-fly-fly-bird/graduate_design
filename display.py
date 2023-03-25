@@ -100,6 +100,7 @@ class OuterVideoThread(QThread):
 class App(QWidget):
     def __init__(self):
         super().__init__()
+        self.outerThread = None
         self.thread = None
         self.screenwidth = None
         self.screenheight = None
