@@ -105,4 +105,4 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # self define
-*.mp4
+**/*.mp4
