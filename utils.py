@@ -45,21 +45,43 @@ class ImgUitls:
 
     @staticmethod
     def video2img(video_filepath, img_dir):
-        if not os.path.exists(img_dir) or not os.path.exists(os.path.split(video_filepath)[0]):
-            print("路径不存在，请先创建文件夹。")
+        if isinstance(video_filepath, str):
+            if not os.path.exists(img_dir) or not os.path.exists(os.path.split(video_filepath)[0]):
+                print("路径不存在，请先创建文件夹。")
         else:
-            vidcap = cv2.VideoCapture(video_filepath)
-            success, image = vidcap.read()
+            cap = cv2.VideoCapture(video_filepath)
+            fps = int(round(cap.get(cv2.CAP_PROP_FPS)))
+            print(fps)
             count = 0
-            while success:
-                cv2.imwrite(os.path.join(img_dir, "frame%d.jpg" % count), image)  # save frame as JPEG file
-                success, image = vidcap.read()
-                print('Read a new frame: ', success)
-                count += 1
+            while cap.isOpened():
+                ret, frame = cap.read()
+
+                if ret:
+                    filename = os.path.join(img_dir, 'frame{:d}.jpg'.format(count))
+                    cv2.imwrite(filename, frame)
+                    count += 30  # i.e. at 30 fps, this advances one second
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                    print(f"保存{filename}成功")
+                else:
+                    cap.release()
+                    break
             print("成功转成图片")
+
+    @staticmethod
+    def get_available_cameras():
+        index = 0
+        arr = []
+        while True:
+            cap = cv2.VideoCapture(index)
+            if not cap.read()[0]:
+                break
+            else:
+                arr.append(index)
+            cap.release()
+            index += 1
+        return arr
 
 
 if __name__ == '__main__':
-    video_path = r'/Users/lucas/Desktop/face.mp4'
     out_dir = r'/Users/lucas/Desktop/hello/'
-    ImgUitls.video2img(video_path, out_dir)
+    ImgUitls.video2img(1, out_dir)
