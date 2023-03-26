@@ -1,5 +1,6 @@
 import math
 import os
+import time
 
 import cv2
 import numpy as np
@@ -44,7 +45,7 @@ class ImgUitls:
             return True
 
     @staticmethod
-    def video2img(video_filepath, img_dir):
+    def video2img(video_filepath, img_dir, ratio):
         if isinstance(video_filepath, str):
             if not os.path.exists(img_dir) or not os.path.exists(os.path.split(video_filepath)[0]):
                 print("路径不存在，请先创建文件夹。")
@@ -53,15 +54,15 @@ class ImgUitls:
             fps = int(round(cap.get(cv2.CAP_PROP_FPS)))
             print(fps)
             count = 0
+            sleep_time = 1 / fps * ratio
             while cap.isOpened():
                 ret, frame = cap.read()
-
                 if ret:
                     filename = os.path.join(img_dir, 'frame{:d}.jpg'.format(count))
                     cv2.imwrite(filename, frame)
-                    count += 30  # i.e. at 30 fps, this advances one second
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, count)
+                    count += fps  # i.e. at 30 fps, this advances one second
                     print(f"保存{filename}成功")
+                    time.sleep(sleep_time)
                 else:
                     cap.release()
                     break
@@ -81,7 +82,33 @@ class ImgUitls:
             index += 1
         return arr
 
+    @staticmethod
+    def keyShortcut(img_dir):
+        cam = cv2.VideoCapture(1)
+        cv2.namedWindow("key shortcut")
+        img_counter = 0
+        while True:
+            ret, frame = cam.read()
+            if not ret:
+                print("failed to grab frame")
+                break
+            cv2.imshow("hello", frame)
+
+            k = cv2.waitKey(1)  # 单位是ms
+            if k % 256 == 27:
+                # ESC pressed
+                print("Escape hit, closing...")
+                break
+            elif k % 256 == 32:
+                # SPACE pressed
+                img_name = os.path.join(img_dir, 'frame{:d}.jpg'.format(img_counter))
+                cv2.imwrite(img_name, frame)
+                print("{} written!".format(img_name))
+                img_counter += 1
+        cam.release()
+        cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     out_dir = r'/Users/lucas/Desktop/hello/'
-    ImgUitls.video2img(1, out_dir)
+    ImgUitls.video2img(1, out_dir, 10)

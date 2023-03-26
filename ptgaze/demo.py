@@ -5,14 +5,12 @@ from typing import Optional
 
 import cv2
 import numpy as np
-from omegaconf import DictConfig
-
 from PyQt6.QtCore import QThread, pyqtSignal
+from omegaconf import DictConfig
 
 from .common import Face, FacePartsName, Visualizer
 from .gaze_estimator import GazeEstimator
 from .utils import get_3d_face_model
-
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -234,6 +232,7 @@ class Demo(QThread):
                 pitch, yaw = np.rad2deg(eye.vector_to_angle(eye.gaze_vector))
                 logger.info(
                     f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+                self.judge_if_distraction(pitch, yaw)
         elif self.config.mode in ['MPIIFaceGaze', 'ETH-XGaze']:
             self.visualizer.draw_3d_line(
                 face.center, face.center + length * face.gaze_vector)
@@ -241,3 +240,9 @@ class Demo(QThread):
             logger.info(f'[face] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
         else:
             raise ValueError
+
+    def judge_if_distraction(self, pitch, yaw) -> None:
+        if pitch < -5 and yaw < -5:
+            logger.error('分心！')
+        else:
+            pass
