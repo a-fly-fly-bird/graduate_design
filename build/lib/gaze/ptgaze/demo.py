@@ -241,8 +241,14 @@ class Demo(QThread):
         else:
             raise ValueError
 
+    @staticmethod
     def judge_if_distraction(self, pitch, yaw) -> None:
         if pitch < -5 and yaw < -5:
             logger.error('分心！')
         else:
             pass
+
+    def stop(self):
+        """Sets run flag to False and waits for thread to finish"""
+        self._run_flag = False
+        self.wait()

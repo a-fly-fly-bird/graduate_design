@@ -13,7 +13,7 @@ gaze_estimator:
   use_dummy_camera_params: false
   normalized_camera_params: ${PACKAGE_ROOT}/data/normalized_camera_params/eth-xgaze.yaml
   normalized_camera_distance: 0.6
-  image_size: [224, 224]
+  image_size: [ 224, 224 ]
 demo:
   use_camera: true
   display_on_screen: true

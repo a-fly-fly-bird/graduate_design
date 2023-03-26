@@ -6,7 +6,7 @@ model:
     name: resnet_simple
     pretrained: resnet18
     resnet_block: basic
-    resnet_layers: [2, 2, 2]
+    resnet_layers: [ 2, 2, 2 ]
 face_detector:
   mode: dlib
   dlib_model_path: ~/.ptgaze/dlib/shape_predictor_68_face_landmarks.dat
@@ -18,7 +18,7 @@ gaze_estimator:
   use_dummy_camera_params: false
   normalized_camera_params: ${PACKAGE_ROOT}/data/normalized_camera_params/mpiifacegaze.yaml
   normalized_camera_distance: 1.0
-  image_size: [224, 224]
+  image_size: [ 224, 224 ]
 demo:
   use_camera: true
   display_on_screen: true

@@ -160,6 +160,7 @@ def main():
 
     app = QApplication(sys.argv)
     my_app = App()
+    my_app.setAnotherThread(demo)
     demo.img_change_signal.connect(my_app.update_image)
     demo.start()
     my_app.show()

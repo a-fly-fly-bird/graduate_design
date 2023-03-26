@@ -2,7 +2,7 @@ import sys
 
 import cv2
 import numpy as np
-from PyQt6.QtCore import pyqtSlot, Qt
+from PyQt6.QtCore import pyqtSlot, Qt, QThread
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
 
@@ -25,8 +25,12 @@ class App(QWidget):
 
         self.outerThread = None
         self.thread = None
+        self.anotherThread: QThread = None
 
         self.init_ui()
+
+    def setAnotherThread(self, thread1):
+        self.anotherThread = thread1
 
     def init_ui(self):
         # fit screen
@@ -82,7 +86,9 @@ class App(QWidget):
         return label
 
     def closeEvent(self, event):
-        self.thread.stop()
+        # self.thread.stop()
+        self.outerThread.stop()
+        # self.anotherThread.stop()
         event.accept()
 
     @pyqtSlot(np.ndarray)
