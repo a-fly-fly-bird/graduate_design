@@ -1,6 +1,6 @@
 dlib
 face_alignment
-mediapipe_silicon
+mediapipe
 numpy
 omegaconf
 opencv_contrib_python
