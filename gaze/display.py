@@ -1,4 +1,5 @@
 import sys
+import time
 
 import cv2
 import numpy as np
@@ -9,6 +10,7 @@ from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLay
 from gaze.video_thread import OuterVideoThread
 
 
+# 不能跨线程计算FPS，误差太大！
 class App(QWidget):
     def __init__(self):
         super().__init__()
@@ -73,6 +75,7 @@ class App(QWidget):
 
         self.outerThread = OuterVideoThread()
         self.outerThread.lane_img_change_signal.connect(self.update_lane_image)
+        self.outerThread.start_time_signal.connect(self.calculate_time)
         self.outerThread.start()
 
     def setDefaultImgLabel(self):
@@ -90,6 +93,12 @@ class App(QWidget):
         self.outerThread.stop()
         # self.anotherThread.stop()
         event.accept()
+
+    @pyqtSlot(float)
+    def calculate_time(self, start_time):
+        end_time = time.time()
+        gap = end_time - start_time
+        print(f'FPS: {1 / gap}')
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):

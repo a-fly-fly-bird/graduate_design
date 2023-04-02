@@ -1,6 +1,7 @@
 import datetime
 import logging
 import pathlib
+import time
 from typing import Optional
 
 import cv2
@@ -66,6 +67,7 @@ class Demo(QThread):
 
     def _run_on_video(self) -> None:
         while True:
+            begin = time.time()
             if self.config.demo.display_on_screen:
                 self._wait_key()
                 if self.stop:
@@ -77,8 +79,14 @@ class Demo(QThread):
             self._process_image(frame)
 
             if self.config.demo.display_on_screen:
+                end = time.time()
+                fps = 1 / (end - begin)
+                fps_s = f'FPS: {fps}'
+                # https://blog.csdn.net/u013685264/article/details/121661895
+                cv_img_copy = self.visualizer.image.copy()
+                cv2.putText(cv_img_copy, fps_s, (200, 100), cv2.FONT_HERSHEY_COMPLEX, 2.0, (100, 200, 200), 5)
                 # cv2.imshow('frame', self.visualizer.image)
-                self.img_change_signal.emit(self.visualizer.image)
+                self.img_change_signal.emit(cv_img_copy)
         self.cap.release()
         if self.writer:
             self.writer.release()

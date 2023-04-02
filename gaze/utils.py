@@ -111,4 +111,4 @@ class ImgUitls:
 
 if __name__ == '__main__':
     out_dir = r'/Users/lucas/Desktop/hello/'
-    ImgUitls.video2img(1, out_dir, 10)
+    ImgUitls.image2video(1, out_dir, 10)

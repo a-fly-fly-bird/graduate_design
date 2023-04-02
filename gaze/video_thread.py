@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 from PyQt6.QtCore import QThread, pyqtSignal
@@ -31,12 +33,14 @@ class VideoThread(QThread):  # https://gist.github.com/docPhil99/ca4da12c9d6f29b
 
 class OuterVideoThread(QThread):
     lane_img_change_signal = pyqtSignal(np.ndarray)
+    start_time_signal = pyqtSignal(float)
 
     def __init__(self):
         super().__init__()
         self._run_flag = True
 
     def run(self):
+        start_time = time.time()
         headPoseEstimation = HeadPoseEstimation()
         cap = cv2.VideoCapture(0)
         while self._run_flag:
@@ -44,6 +48,7 @@ class OuterVideoThread(QThread):
             if ret:
                 cv_img = headPoseEstimation.head_pose_estimation(cv_img)
                 self.lane_img_change_signal.emit(cv_img)
+                # self.start_time_signal.emit(start_time)
         # shut down capture system
         cap.release()
 
