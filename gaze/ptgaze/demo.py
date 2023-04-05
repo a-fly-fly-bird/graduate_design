@@ -44,7 +44,7 @@ class Demo(QThread):
         self.json_data = None
         self.old_yaw = 0
         self.old_pitch = 0
-        self.gaze_vector = {'author': 'ty', 'hello': 'world', 'direction': [], 'is_gaze_change': []}
+        self.gaze_vector = {'author': 'ty', 'hello': 'world', 'direction': [], 'is_gaze_change': [], 'gaze_thing': []}
 
     def run(self) -> None:
         if self.config.demo.use_camera or self.config.demo.video_path:
@@ -248,6 +248,12 @@ class Demo(QThread):
                     self.gaze_vector['is_gaze_change'].append(1)
                 else:
                     self.gaze_vector['is_gaze_change'].append(0)
+                if yaw > 20 and pitch > 20:
+                    self.gaze_vector['gaze_thing'].append('pad')
+                elif yaw < -20 and pitch < -20:
+                    self.gaze_vector['gaze_thing'].append('mirror')
+                else:
+                    self.gaze_vector['gaze_thing'].append('front')
                 self.json_data = json.dumps(self.gaze_vector)
                 logger.info(
                     f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
