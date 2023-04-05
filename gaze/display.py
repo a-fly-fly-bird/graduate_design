@@ -91,7 +91,7 @@ class App(QWidget):
     def closeEvent(self, event):
         # self.thread.stop()
         self.outerThread.stop()
-        # self.anotherThread.stop()
+        self.anotherThread.stop_la()
         event.accept()
 
     @pyqtSlot(float)

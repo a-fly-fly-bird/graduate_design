@@ -164,7 +164,7 @@ def main():
     demo.img_change_signal.connect(my_app.update_image)
     demo.start()
     my_app.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec() and demo.exec())
 
 
 if __name__ == "__main__":

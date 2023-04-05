@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import pathlib
 import time
@@ -40,6 +41,10 @@ class Demo(QThread):
         self.show_landmarks = self.config.demo.show_landmarks
         self.show_normalized_image = self.config.demo.show_normalized_image
         self.show_template_model = self.config.demo.show_template_model
+        self.json_data = None
+        self.old_yaw = 0
+        self.old_pitch = 0
+        self.gaze_vector = {'author': 'ty', 'hello': 'world', 'direction': [], 'is_gaze_change': []}
 
     def run(self) -> None:
         if self.config.demo.use_camera or self.config.demo.video_path:
@@ -238,6 +243,12 @@ class Demo(QThread):
                 self.visualizer.draw_3d_line(
                     eye.center, eye.center + length * eye.gaze_vector)
                 pitch, yaw = np.rad2deg(eye.vector_to_angle(eye.gaze_vector))
+                self.gaze_vector['direction'].append((pitch, yaw))
+                if ((self.old_yaw - yaw) ** 2 + (self.old_pitch - pitch) ** 2) > 200:
+                    self.gaze_vector['is_gaze_change'].append(1)
+                else:
+                    self.gaze_vector['is_gaze_change'].append(0)
+                self.json_data = json.dumps(self.gaze_vector)
                 logger.info(
                     f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
                 # self.judge_if_distraction(pitch, yaw)
@@ -245,6 +256,7 @@ class Demo(QThread):
             self.visualizer.draw_3d_line(
                 face.center, face.center + length * face.gaze_vector)
             pitch, yaw = np.rad2deg(face.vector_to_angle(face.gaze_vector))
+
             logger.info(f'[face] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
         else:
             raise ValueError
@@ -256,7 +268,9 @@ class Demo(QThread):
         else:
             pass
 
-    def stop(self):
+    def stop_la(self):
         """Sets run flag to False and waits for thread to finish"""
         self._run_flag = False
-        self.wait()
+        # self.wait()
+        with open('hello.json', 'w') as f:
+            f.write(self.json_data)
