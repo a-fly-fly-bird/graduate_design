@@ -106,3 +106,7 @@ fabric.properties
 
 # self define
 **/*.mp4
+
+/dist/
+/build/
+/gaze_guy.egg-info/

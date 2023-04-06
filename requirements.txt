@@ -1,4 +1,3 @@
-dlib
 face_alignment
 mediapipe_silicon
 numpy
@@ -9,12 +8,8 @@ PyYAML
 scipy
 setuptools
 timm
-torch==2.0.0
-torchvision
-
 opencv-python
 pandas
 tqdm
-
 matplotlib
 filterpy

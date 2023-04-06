@@ -8,8 +8,8 @@ def _get_requirements(path):
 
 
 setup(
-    name="gaze",
-    version="0.2.1",
+    name="gaze_guy",
+    version="1.0.0",
     python_requires='>=3.6',
     packages=find_packages(exclude=('tests',)),
     install_requires=_get_requirements('requirements.txt'),
@@ -25,7 +25,7 @@ setup(
     # 在 /usr/local/bin下 生成命令
     entry_points={
         'console_scripts': [
-            'gaze = gaze.main:main',
+            'gaze_guy = gaze_guy.display.main:main',
         ],
     },
 

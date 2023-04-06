@@ -59,6 +59,7 @@ class Demo(QThread):
         """Sets run flag to False and waits for thread to finish"""
         print('停止运行，开始输出日志记录')
         f_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'gaze.json')
+        print(f_path)
         with open(f_path, 'w') as f:
             f.write(json.dumps(self.gaze_vector))
         print('输出日志记录完成')
