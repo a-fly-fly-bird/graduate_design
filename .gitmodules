@@ -1,3 +1,0 @@
-[submodule "pytorch_mpiigaze"]
-	path = pytorch_mpiigaze
-	url = https://github.com/hysts/pytorch_mpiigaze.git
