@@ -18,6 +18,7 @@ from .utils import get_3d_face_model
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from gaze_guy.kits.kalman import Kalman
 
 class Demo(QThread):
     gazeEstimationSignal = pyqtSignal(np.ndarray)
@@ -253,7 +254,6 @@ class Demo(QThread):
                 self.visualizer.draw_3d_line(
                     eye.center, eye.center + length * eye.gaze_vector)
                 pitch, yaw = np.rad2deg(eye.vector_to_angle(eye.gaze_vector))
-
                 self.gaze_vector['direction'].append((pitch, yaw))
                 if ((self.old_yaw - yaw) ** 2 + (self.old_pitch - pitch) ** 2) > 200:
                     self.gaze_vector['is_gaze_change'].append(1)
@@ -266,8 +266,16 @@ class Demo(QThread):
                 else:
                     self.gaze_vector['gaze_thing'].append('front')
 
-                logger.info(
-                    f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+                # kalman filter module begin
+                logger.info(f'[{key.name.lower()} 未滤波的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+                my_kalman_filter = Kalman()
+                after = my_kalman_filter.predict([pitch, yaw])
+                after = [float(i) for i in after][:2]
+                (pitch, yaw) = after
+                logger.info(f'[{key.name.lower()} 滤波后的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+                # kalman filter module begin 
+
+                # logger.info(f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
         elif self.config.mode in ['MPIIFaceGaze', 'ETH-XGaze']:
             self.visualizer.draw_3d_line(
                 face.center, face.center + length * face.gaze_vector)
