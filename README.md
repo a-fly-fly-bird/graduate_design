@@ -16,3 +16,6 @@ MediaPipe 是一款由 Google Research 开发并开源的多媒体机器学习�
 * dlib只支持2d坐标，mediapipe支持3d坐标
 * mediapipe安装和使用更简单
 * （貌似）mediapipe性能更好
+
+# TODO
+* kalman filter

@@ -3,6 +3,7 @@ import os
 import time
 import cv2
 import numpy as np
+import fire
 
 
 class ImgUitls:
@@ -106,3 +107,6 @@ class ImgUitls:
                 img_counter += 1
         cam.release()
         cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+  fire.Fire(ImgUitls)
