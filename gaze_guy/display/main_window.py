@@ -50,9 +50,9 @@ class App(QWidget):
         self.setGeometry(self.screenWidth // 6, self.screenHeight // 6, self.screenWidth // 6 * 4, self.screenHeight // 6 * 4)
         self.setWindowTitle('驾驶分心检测系统')
 
-        self.threads['t1'] = MediaPipeHeadPoseEstimationThread()
+        # self.threads['t1'] = MediaPipeHeadPoseEstimationThread()
+        # self.threads['t1'].headPoseEstimationSignal.connect(self.update_lane_image)
         self.threads['t2'] = None
-        self.threads['t1'].headPoseEstimationSignal.connect(self.update_lane_image)
 
     def startDLGazeEstimationThread(self, config):
         demo = Demo(config)

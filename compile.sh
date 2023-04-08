@@ -6,11 +6,10 @@ case "$1" in
   python setup.py bdist_wheel
   ;;
   "install")
-  pip uninstall gaze -y
-  # pip install ./gaze-0.2.0-py2.py3-none-any.whl
-  pip install "$2"
+  pip uninstall gaze_guy -y
+  pip install dist/gaze_guy-1.0.0-py2.py3-none-any.whl
   ;;
   "run")
-  gaze --mode mpiigaze
+  gaze_guy --mode mpiigaze
   ;;
 esac
