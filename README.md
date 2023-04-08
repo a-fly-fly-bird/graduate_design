@@ -26,3 +26,6 @@ MediaPipe 是一款由 Google Research 开发并开源的多媒体机器学习�
 PEP 465 - A dedicated infix operator for matrix multiplication
 
 可以理解为矩阵乘法操作符。
+
+# TODO
+threads seperate(client & server), 将server部署到学校的服务器。
