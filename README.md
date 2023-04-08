@@ -17,5 +17,12 @@ MediaPipe 是一款由 Google Research 开发并开源的多媒体机器学习�
 * mediapipe安装和使用更简单
 * （貌似）mediapipe性能更好
 
-# TODO
-* kalman filter
+# Kalman Filter
+[filterpy](https://github.com/rlabbe/filterpy) 有 卡尔曼滤波的支持，因此不用自己实现。
+
+或者kits的kalman里有师兄实现的kalman filter。
+## @ operator
+
+PEP 465 - A dedicated infix operator for matrix multiplication
+
+可以理解为矩阵乘法操作符。
