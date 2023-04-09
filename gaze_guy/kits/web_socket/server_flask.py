@@ -1,13 +1,20 @@
+import base64
+import io
 from flask import Flask, request, Response
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
 import cv2
 import numpy as np
+from PIL import Image
 
 from gaze_guy.display.parse import my_parse
 from gaze_guy.ptgaze.server_demo import Demo
 
+
 config = my_parse()
 demo = Demo(config)
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 # 处理接收到的图像
 def process_image(img_data):
@@ -26,6 +33,35 @@ def process_image(img_data):
     processed_img_bytes = processed_img_encoded.tobytes()
     # 返回byte数组
     return processed_img_bytes
+
+@socketio.on('image')
+def image(data_image):
+    sbuf = io.StringIO()
+    sbuf.write(data_image)
+
+    # decode and convert into image
+    b = io.BytesIO(base64.b64decode(data_image))
+    pimg = Image.open(b)
+
+    ## converting RGB to BGR, as opencv standards
+    frame = cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2GRAY)
+
+    # Process the image frame
+    frame = imutils.resize(frame, width=700)
+    frame = cv2.flip(frame, 1)
+    imgencode = cv2.imencode('.jpg', frame)[1]
+
+    # base64 encode
+    stringData = base64.b64encode(imgencode).decode('utf-8')
+    b64_src = 'data:image/jpg;base64,'
+    stringData = b64_src + stringData
+
+    # emit the frame back
+    emit('response_back', stringData)
+
+@app.route('/', methods=['POST', 'GET'])
+def index():
+    return render_template('index.html')
 
 # 定义可以接收POST请求的路由
 @app.route('/process_video', methods=['POST'])

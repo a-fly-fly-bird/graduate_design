@@ -5,7 +5,7 @@ import numpy as np
 server_url = 'http://localhost:10000/process_video'
 
 # 声明要使用的视频编解码器
-codec = cv2.VideoWriter_fourcc(*'MP4V')
+# codec = cv2.VideoWriter_fourcc(*'MP4V')
 # 定义视频帧率
 frameRate = 10.0
 # 设置摄像头ID
