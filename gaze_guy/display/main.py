@@ -1,11 +1,5 @@
 import sys
-import time
-import cv2
-import numpy as np
-
-from PyQt6.QtCore import pyqtSlot, Qt
-from PyQt6.QtGui import QPixmap, QImage
-from PyQt6.QtWidgets import QWidget, QApplication, QLabel, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QApplication
 
 from gaze_guy.display.main_window import App
 from gaze_guy.display.parse import my_parse
@@ -21,3 +15,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    

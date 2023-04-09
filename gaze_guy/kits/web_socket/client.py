@@ -23,3 +23,6 @@ while True:
 
     # Then data
     clientsocket.sendall(message_size + data)
+
+    # Retrieve message size
+    
