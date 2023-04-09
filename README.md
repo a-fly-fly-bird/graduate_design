@@ -1,3 +1,5 @@
+# co-author
+Chat GPT（听我说谢谢你😭）
 # __main__.py 
 
 参考：[__main__ --- 最高层级代码环境](https://docs.python.org/zh-cn/3/library/__main__.html)
