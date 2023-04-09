@@ -13,3 +13,4 @@ pandas
 tqdm
 matplotlib
 filterpy
+dlib

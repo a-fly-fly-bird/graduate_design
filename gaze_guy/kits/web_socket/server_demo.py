@@ -1,64 +1,52 @@
-#服务端
-import socket
-import threading
-import struct
-import time
-import cv2
-import numpy
- 
-class Carame_Accept_Object:
-    def __init__(self,S_addr_port=("",8880)):
-        self.resolution=(640,480)       #分辨率
-        self.img_fps=15                 #每秒传输多少帧数
-        self.addr_port=S_addr_port
-        self.Set_Socket(self.addr_port)
- 
-    #设置套接字
-    def Set_Socket(self,S_addr_port):
-        self.server=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1) #端口可复用
-        self.server.bind(S_addr_port)
-        self.server.listen(5)
-        #print("the process work in the port:%d" % S_addr_port[1])
- 
- 
-def check_option(object,client):
-    #按格式解码，确定帧数和分辨率
-    info=struct.unpack('lhh',client.recv(12))
-    if info[0]>888:
-        object.img_fps=int(info[0])-888          #获取帧数
-        object.resolution=list(object.resolution)
-        # 获取分辨率
-        object.resolution[0]=info[1]
-        object.resolution[1]=info[2]
-        object.resolution = tuple(object.resolution)
-        return 1
-    else:
-        return 0
- 
-def RT_Image(object,client,D_addr):
-    if(check_option(object,client)==0):
-        return
-    camera=cv2.VideoCapture(0)                                #从摄像头中获取视频
-    img_param=[int(cv2.IMWRITE_JPEG_QUALITY),object.img_fps]  #设置传送图像格式、帧数
-    while(1):
-        time.sleep(0.1)             #推迟线程运行0.1s
-        _,object.img=camera.read()  #读取视频每一帧
- 
-        object.img=cv2.resize(object.img,object.resolution)     #按要求调整图像大小(resolution必须为元组)
-        _,img_encode=cv2.imencode('.jpg',object.img,img_param)  #按格式生成图片
-        img_code=numpy.array(img_encode)                        #转换成矩阵
-        object.img_data=img_code.tostring()                     #生成相应的字符串
-        try:
-            #按照相应的格式进行打包发送图片
-            client.send(struct.pack("lhh",len(object.img_data),object.resolution[0],object.resolution[1])+object.img_data)
-        except:
-            camera.release()        #释放资源
-            return
- 
-if __name__ == '__main__':
-    camera=Carame_Accept_Object()
-    while(1):
-        client,D_addr=camera.server.accept()
-        clientThread=threading.Thread(None,target=RT_Image,args=(camera,client,D_addr,))
-        clientThread.start()
+import socket, cv2, pickle,struct
+
+from gaze_guy.display.parse import my_parse
+from gaze_guy.ptgaze.server_demo import Demo
+
+'''
+1. 创建套接字，绑定套接字到本地IP与端口：socket.socket(socket.AF_INET,socket.SOCK_STREAM) , s.bind()
+2. 开始监听连接：s.listen()
+3. 进入循环，不断接受客户端的连接请求：s.accept()
+4. 接收传来的数据，或者发送数据给对方：s.recv() , s.sendall()
+5. 传输完毕后，关闭套接字：s.close()
+'''
+
+config = my_parse()
+demo = Demo(config)
+
+# Socket Create
+server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+host_name  = socket.gethostname()
+host_ip = socket.gethostbyname(host_name)
+print('HOST IP:',host_ip)
+port = 9999
+socket_address = (host_ip,port)
+
+# Socket Bind
+server_socket.bind(socket_address)
+
+# Socket Listen
+server_socket.listen(5)
+print("LISTENING AT:",socket_address)
+
+# Socket Accept
+while True:
+    client_socket,addr = server_socket.accept()
+    print('GOT CONNECTION FROM:',addr)
+    if client_socket:
+        vid = cv2.VideoCapture(0)
+        
+        while(vid.isOpened()):
+            img,frame = vid.read()
+            
+            demo._process_image(frame)
+            processed_image = demo.visualizer.image
+        
+            a = pickle.dumps(processed_image)
+            message = struct.pack("Q",len(a))+a
+            client_socket.sendall(message)
+            
+            cv2.imshow('TRANSMITTING VIDEO',frame)
+            key = cv2.waitKey(1) & 0xFF
+            if key ==ord('q'):
+                client_socket.close()
