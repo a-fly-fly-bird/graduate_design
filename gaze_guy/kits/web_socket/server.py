@@ -6,7 +6,7 @@ import threading
 import matplotlib.pyplot as plt
 
 from gaze_guy.display.parse import my_parse
-from gaze_guy.ptgaze.demo import Demo
+from gaze_guy.ptgaze.server_demo import Demo
 
 '''
 1. 创建套接字，绑定套接字到本地IP与端口：socket.socket(socket.AF_INET,socket.SOCK_STREAM) , s.bind()
