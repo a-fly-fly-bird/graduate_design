@@ -1,7 +1,8 @@
-FROM python:alpine3.16
+FROM python:3.9.16-buster
 
 # 换源
 RUN sed -i 's/archive.ubuntu.com/mirrors.cqu.edu.cn/g' /etc/apt/sources.list \
+    && sed -i 's/deb.debian.org/mirrors.cqu.edu.cn/g' /etc/apt/sources.list \
     && apt update -y \
     && apt upgrade -y \
     && apt install vim -y \
@@ -12,10 +13,12 @@ RUN sed -i 's/archive.ubuntu.com/mirrors.cqu.edu.cn/g' /etc/apt/sources.list \
     && touch ~/.pip/pip.conf \
     && echo "[global]" >> ~/.pip/pip.conf \
     && echo "index-url = https://mirrors.cqu.edu.cn/pypi/web/simple" >> ~/.pip/pip.conf
-    # && pip config set global.index-url https://mirrors.cqu.edu.cn/pypi/web/simple
 
 # 安装依赖
-RUN apt install git
+RUN apt install git -y \
+    && git clone --depth 1 https://github.com/a-fly-fly-bird/graduate_design.git \
+    && cd graduate_design \
+    && pip install -r requirements.txt
 
 VOLUME [ "/workspace" ]
 
