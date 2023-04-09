@@ -16,6 +16,9 @@ from gaze_guy.ptgaze.server_demo import Demo
 5. 传输完毕后，关闭套接字：s.close()
 '''
 
+HOST = ''
+PORT = 8090
+
 config = my_parse()
 demo = Demo(config)
 
@@ -29,7 +32,11 @@ def link_handler(conn, client):
     while True: 
         # Retrieve message size
         while len(data) < payload_size:
-            data += conn.recv(4096)
+            packet = conn.recv(4*1024)
+            if packet:
+                data += packet
+            else:
+                break
 
         packed_msg_size = data[:payload_size]
         data = data[payload_size:]
@@ -43,6 +50,7 @@ def link_handler(conn, client):
         data = data[msg_size:]
 
         # Extract frame
+        print('接收完成')
         frame = pickle.loads(frame_data)
 
         '''
@@ -50,7 +58,7 @@ def link_handler(conn, client):
         '''
         demo._process_image(frame)
         processed_image = demo.visualizer.image
-        # print(f'推理后的图片: {processed_image}')
+        print('推理完成')
         data = pickle.dumps(processed_image)
 
         # Send message length first
@@ -64,27 +72,26 @@ def link_handler(conn, client):
         # cv2.waitKey(1)
 
         # 这个可以成功
-        print(frame)
-
-
-HOST = ''
-PORT = 8089
-
-# socket.socket()函数来创建一个socket对象，socket.socket()函数语法如下：
-# family: 套接字家族，可以使AF_UNIX或者AF_INET。
-# type: 套接字类型，根据是面向连接的还是非连接分为SOCK_STREAM或SOCK_DGRAM，也就是TCP和UDP的区别。
-# protocol: 一般不填默认为0。
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print('Socket created')
-
-s.bind((HOST, PORT))
-print('Socket bind complete')
-s.listen(4)
-print('Socket now listening')
-
-while True:
-    conn, addr = s.accept()
-    t = threading.Thread(target=link_handler, args=(conn, addr))
-    t.start()
-
+        print('发送完成')
     
+def main():
+    # socket.socket()函数来创建一个socket对象，socket.socket()函数语法如下：
+    # family: 套接字家族，可以使AF_UNIX或者AF_INET。
+    # type: 套接字类型，根据是面向连接的还是非连接分为SOCK_STREAM或SOCK_DGRAM，也就是TCP和UDP的区别。
+    # protocol: 一般不填默认为0。
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print('Socket created')
+
+    s.bind((HOST, PORT))
+    print('Socket bind complete')
+    s.listen(4)
+    print('Socket now listening')
+
+    while True:
+        conn, addr = s.accept()
+        t = threading.Thread(target=link_handler, args=(conn, addr))
+        t.start()
+        print('开始新线程处理')
+
+if __name__ == '__main__':
+    main()
