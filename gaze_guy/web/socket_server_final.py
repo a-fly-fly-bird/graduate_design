@@ -18,7 +18,7 @@ from gaze_guy.ptgaze.server_demo import Demo
 '''
 
 HOST = ''
-PORT = 8090
+PORT = 10000
 
 config = my_parse()
 demo = Demo(config)
@@ -40,10 +40,18 @@ def link_handler(conn, client):
         frame_data = data[:msg_size]
         data  = data[msg_size:]
         frame = pickle.loads(frame_data)
-        cv2.imshow("RECEIVING VIDEO",frame)
-        key = cv2.waitKey(1) & 0xFF
-        if key  == ord('q'):
-            break
+        
+        # cv2.imshow("SERVER VIDEO",frame)
+        # key = cv2.waitKey(1) & 0xFF
+        # if key  == ord('q'):
+        #     break
+        
+        demo._process_image(frame)
+        processed_image = demo.visualizer.image
+        a = pickle.dumps(processed_image)
+        message = struct.pack("Q",len(a))+a
+        conn.sendall(message)
+        
     conn.close()
     cv2.destroyAllWindows()
 
