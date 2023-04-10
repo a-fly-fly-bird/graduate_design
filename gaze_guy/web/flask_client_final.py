@@ -10,7 +10,8 @@ class FrontEnd:
 
     def __del__(self):
         self.cap.release()
-        self.output.release()
+        if self.output:
+            self.output.release()
         cv2.destroyAllWindows()
 
     def run(self):

@@ -36,3 +36,9 @@ PEP 465 - A dedicated infix operator for matrix multiplication
 
 - [x] ~~threads seperate(client & server), 将server部署到学校的服务器。~~
 - [ ] fix & debug
+
+# Helpful Command
+```sh
+docker rmi `docker images | grep "<none>" | awk '{print $3}'`
+docker rm $(docker ps -a -q)
+```
