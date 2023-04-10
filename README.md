@@ -36,4 +36,7 @@ PEP 465 - A dedicated infix operator for matrix multiplication
 
 - [x] ~~threads seperate(client & server), 将server部署到学校的服务器。~~
 - [ ] fix & debug
-  
+
+python -m gaze_guy.web.flask_server_final
+python -m gaze_guy.web.flask_client_final
+python -m gaze_guy.kits.heatmap
