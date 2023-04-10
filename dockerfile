@@ -27,4 +27,4 @@ EXPOSE 8888
 
 WORKDIR /workspace/graduate_design/
 
-CMD ["python3", "-m", "gaze_guy.kits.web_socket.server_flask"]
+CMD ["python3", "-m", "gaze_guy.web.flask_server_final"]
