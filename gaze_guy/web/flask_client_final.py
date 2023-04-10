@@ -4,7 +4,8 @@ import numpy as np
 
 class FrontEnd:
     def __init__(self):
-        self.SERVER_URL = 'http://localhost:9999/process_video'
+        # self.SERVER_URL = 'http://localhost:9999/process_video'
+        self.SERVER_URL = 'http://180.85.206.170:9999/process_video'
         self.cap = cv2.VideoCapture(0)
         self.output = None
 

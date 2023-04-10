@@ -1,9 +1,21 @@
 <html>
-<head>
-    
-</head>
+<head></head>
 <body>
+    <!-- OpenCV.js 4.5.5 版本 -->
+    <script src='https://docs.opencv.org/4.5.5/opencv.js'></script>
     <script>
+        function sendImageToServer(imageData) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:9999/process_video', true);
+            xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+            xhr.onload = function() {
+              if (this.status === 200) {
+                console.log(this.response);
+              }
+            };
+            xhr.send(imageData);
+          }
+
         document.addEventListener("DOMContentLoaded", () => {
             var but = document.getElementById("but");
             var video = document.getElementById("vid");
@@ -24,6 +36,9 @@
                         video.addEventListener("loadedmetadata", () => {
                             video.play();
                         });
+                        // opencv.js does not have this function
+                        //img_encoded = cv.imencode('.jpg', stream)
+                        sendImageToServer(stream)
                     })
                     .catch(alert);
             });

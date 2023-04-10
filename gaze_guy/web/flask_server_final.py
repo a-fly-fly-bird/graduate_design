@@ -1,4 +1,4 @@
-from flask import Flask, request, Response
+from flask import Flask, render_template, request, Response
 from flask import Flask
 import cv2
 import numpy as np
@@ -58,6 +58,10 @@ def process_video():
     processed_img_bytes = process_image(img_data)
     # 返回处理后的图像
     return Response(response=processed_img_bytes, status=200, mimetype="image/jpeg")
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9999, debug=True)
