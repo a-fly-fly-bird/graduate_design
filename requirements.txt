@@ -15,3 +15,5 @@ tqdm
 matplotlib
 filterpy
 dlib
+fire
+seaborn

@@ -5,6 +5,7 @@ import time
 import matplotlib as mpl
 import seaborn as sns
 import json
+import os
 
 
 class ImgHeatMap:
@@ -111,7 +112,9 @@ def main():
     # 假设有1000条数据, [0,1)内的随机数
     # heat = np.random.rand(1000, 2)
     # heat = np.random.uniform(-21, 21, (1000, 2))
-    with open('/Users/lucas/Documents/School/大四下/毕业设计/5. gaze_whl/gaze_guy/gaze.json', 'r+') as f:
+    current_work_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    json_path = os.path.join(current_work_dir, 'gaze.json')
+    with open(json_path, 'r+') as f:
         data = json.load(f)
     gaze = np.asarray(data['direction'], dtype=np.float32)
     heatMap.plot_heatmap(gaze)
