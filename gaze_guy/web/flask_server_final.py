@@ -60,4 +60,4 @@ def process_video():
     return Response(response=processed_img_bytes, status=200, mimetype="image/jpeg")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000, debug=True)
+    app.run(host='0.0.0.0', port=9999, debug=True)
