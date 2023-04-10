@@ -29,5 +29,11 @@ PEP 465 - A dedicated infix operator for matrix multiplication
 
 可以理解为矩阵乘法操作符。
 
+# 部署
+实现了基于flask的和更底层的socket两种方案的c/s。flask的可以实现跨平台，通过浏览器访问。
+
 # TODO
-threads seperate(client & server), 将server部署到学校的服务器。
+
+- [x] ~~threads seperate(client & server), 将server部署到学校的服务器。~~
+- [ ] fix & debug
+  
