@@ -4,6 +4,7 @@ import socket
 import sys
 import pickle
 import struct
+import imutils
 
 
 def main():
@@ -17,45 +18,23 @@ def main():
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect(('localhost', 8090))
 
-    data_re = b''  # CHANGED
-    payload_size = struct.calcsize("L")  # CHANGED
+    # Socket Accept
+    while(cap.isOpened() and clientsocket):
+        _,frame = cap.read()
+        frame = imutils.resize(frame,width=320)
+        a = pickle.dumps(frame)
+        message = struct.pack("Q",len(a))+a
+        clientsocket.sendall(message)
 
-    while True:
-        ret, frame = cap.read()
-        # Serialize frame
-        data = pickle.dumps(frame)
-        # Send message length first
-        message_size = struct.pack("L", len(data))  # CHANGED
-        # Then data
-        clientsocket.sendall(message_size + data)
-        print('client 发送完成')
-
-        # Retrieve message size
-        while len(data_re) < payload_size:
-            packet = clientsocket.recv(4*1024)
-            print('why?')
-            if packet:
-                data_re += packet
-            else:
-                break
-
-        packed_msg_size = data_re[:payload_size]
-        data_re = data_re[payload_size:]
-        msg_size = struct.unpack("L", packed_msg_size)[0]  # CHANGED
-        # Retrieve all data based on message size
-        while len(data_re) < msg_size:
-            data_re += clientsocket.recv(4096)
-        frame_data = data_re[:msg_size]
-        data_re = data_re[msg_size:]
-        # Extract frame
-        frame = pickle.loads(frame_data)
-        print('client 接收完成')
-        cv2.imshow('frame', frame)
-        key = cv2.waitKey(10)
-        if key == 13:
+        cv2.imshow('TRANSMITTING VIDEO',frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key ==ord('q'):
+            clientsocket.close()
             break
-    
+        
     clientsocket.close()
+    cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
