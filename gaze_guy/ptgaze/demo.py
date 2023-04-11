@@ -11,6 +11,8 @@ from omegaconf import DictConfig
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
+from gaze_guy.kits.distraction_judge import DistractionJudgement
+
 from .common import Face, FacePartsName, Visualizer
 from .gaze_estimator import GazeEstimator
 from .utils import get_3d_face_model
@@ -44,9 +46,12 @@ class Demo(QThread):
         self.show_normalized_image = self.config.demo.show_normalized_image
         self.show_template_model = self.config.demo.show_template_model
 
-        self.old_yaw = 0
-        self.old_pitch = 0
-        self.gaze_vector = {'author': 'ty', 'direction': [], 'is_gaze_change': [], 'gaze_thing': []}
+        self.my_kalman_filter = Kalman()
+        self.distractionJudgement = DistractionJudgement()
+        self.gaze_vector = {
+            "record_time": None,
+            "data": []
+        }
 
     def run(self) -> None:
         if self.config.demo.use_camera or self.config.demo.video_path:
@@ -83,6 +88,7 @@ class Demo(QThread):
             cv2.imwrite(output_path.as_posix(), self.visualizer.image)
 
     def _run_on_video(self) -> None:
+        self.gaze_vector['record_time'] = time.strftime("%a %b %d %H:%M:%S %Y", time.localtime()) 
         while True:
             begin = time.time()
             if self.config.demo.display_on_screen:
@@ -96,12 +102,17 @@ class Demo(QThread):
             self._process_image(frame)
 
             if self.config.demo.display_on_screen:
+                now_data = self.gaze_vector['data'][-1]
                 end = time.time()
                 fps = 1 / (end - begin)
                 fps_s = f'FPS: {fps}'
                 # https://blog.csdn.net/u013685264/article/details/121661895
                 cv_img_copy = self.visualizer.image.copy()
                 cv2.putText(cv_img_copy, fps_s, (200, 100), cv2.FONT_HERSHEY_COMPLEX, 2.0, (100, 200, 200), 5)
+                if now_data['distracted']:
+                    cv2.putText(cv_img_copy, f'Distraction, {now_data["distracted_time"]}', (300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255,0,0), 2)
+                else:
+                    cv2.putText(cv_img_copy, f'Driving, {now_data["distracted_time"]}', (300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255,0,0), 2)
                 self.gazeEstimationSignal.emit(cv_img_copy)
         self.cap.release()
         if self.writer:
@@ -254,28 +265,16 @@ class Demo(QThread):
                 self.visualizer.draw_3d_line(
                     eye.center, eye.center + length * eye.gaze_vector)
                 pitch, yaw = np.rad2deg(eye.vector_to_angle(eye.gaze_vector))
-                self.gaze_vector['direction'].append((pitch, yaw))
-                if ((self.old_yaw - yaw) ** 2 + (self.old_pitch - pitch) ** 2) > 200:
-                    self.gaze_vector['is_gaze_change'].append(1)
-                else:
-                    self.gaze_vector['is_gaze_change'].append(0)
-                if yaw > 20 and pitch > 20:
-                    self.gaze_vector['gaze_thing'].append('pad')
-                elif yaw < -20 and pitch < -20:
-                    self.gaze_vector['gaze_thing'].append('mirror')
-                else:
-                    self.gaze_vector['gaze_thing'].append('front')
-
-                # kalman filter module begin
                 logger.info(f'[{key.name.lower()} 未滤波的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
-                my_kalman_filter = Kalman()
-                after = my_kalman_filter.predict([pitch, yaw])
-                after = [float(i) for i in after][:2]
-                (pitch, yaw) = after
+                
+                # kalman filter module begin
+                after = self.my_kalman_filter.predict_and_update([pitch, yaw])
+                (pitch, yaw) = [float(i) for i in after][:2]
                 logger.info(f'[{key.name.lower()} 滤波后的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
-                # kalman filter module begin 
-
-                # logger.info(f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+                # kalman filter module end
+                self.gaze_vector['data'].append(self.distractionJudgement.judge_by_area((pitch, yaw)))
+                
+                
         elif self.config.mode in ['MPIIFaceGaze', 'ETH-XGaze']:
             self.visualizer.draw_3d_line(
                 face.center, face.center + length * face.gaze_vector)

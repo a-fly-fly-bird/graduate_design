@@ -26,7 +26,7 @@ class Kalman:
         # state uncertainty
         self.my_filter.R = np.array([[1, 0], [0, 1]], dtype=np.float32)*0.01
 
-    def predict(self, current_measurement):
+    def predict_and_update(self, current_measurement):
         # while True:
         self.my_filter.predict()
         self.my_filter.update(current_measurement)
