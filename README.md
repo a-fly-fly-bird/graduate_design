@@ -40,6 +40,7 @@ PEP 465 - A dedicated infix operator for matrix multiplication
 # TODO
 
 - [x] ~~threads seperate(client & server), 将server部署到学校的服务器。~~
+- [ ] 根据注视比等参数进行分心识别
 - [ ] fix & debug
 
 # Helpful Command
