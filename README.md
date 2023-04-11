@@ -1,10 +1,13 @@
 # co-author
 Chat GPT（听我说谢谢你😭）
-
 # Run Env
 Ubuntu 22.04
 
 Known problem: OS X do not support UI on non main thread. So OS X can not run demos in `gaze_guy.web`. `gaze_guy.display` is fine.
+
+## git clone
+
+git clone 记得加 `--depth 1` 参数。不然会很大。
 # __main__.py 
 
 参考：[__main__ --- 最高层级代码环境](https://docs.python.org/zh-cn/3/library/__main__.html)
@@ -50,4 +53,6 @@ docker rmi `docker images | grep "<none>" | awk '{print $3}'`
 docker rm $(docker ps -a -q)
 # export
 
+# run
+python -m  gaze_guy.display.main --video path/a.mp4 --output-dir ~/Downloads --ext mp4
 ```
