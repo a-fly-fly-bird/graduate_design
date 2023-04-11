@@ -1,5 +1,10 @@
 # co-author
 Chat GPT（听我说谢谢你😭）
+
+# Run Env
+Ubuntu 22.04
+
+Known problem: OS X do not support UI on non main thread. So OS X can not run demos in `gaze_guy.web`. `gaze_guy.display` is fine.
 # __main__.py 
 
 参考：[__main__ --- 最高层级代码环境](https://docs.python.org/zh-cn/3/library/__main__.html)
@@ -39,6 +44,9 @@ PEP 465 - A dedicated infix operator for matrix multiplication
 
 # Helpful Command
 ```sh
+# rm images or containers
 docker rmi `docker images | grep "<none>" | awk '{print $3}'`
 docker rm $(docker ps -a -q)
+# export
+
 ```
