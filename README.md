@@ -56,3 +56,4 @@ docker rm $(docker ps -a -q)
 # run
 python -m  gaze_guy.display.main --video path/a.mp4 --output-dir ~/Downloads --ext mp4
 ```
+https://python.plainenglish.io/real-time-image-processing-using-websockets-and-flask-in-python-and-javascript-97fb4a0a764f
