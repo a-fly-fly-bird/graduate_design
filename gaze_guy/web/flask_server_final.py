@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, Response
-from flask import Flask
+from flask_cors import CORS, cross_origin
 import cv2
 import numpy as np
 
@@ -51,6 +51,7 @@ def video_feed():
 
 # 定义可以接收POST请求的路由
 @app.route('/process_video', methods=['POST'])
+@cross_origin(supports_credentials=True)
 def process_video():
     # 接收客户端发来的图像数据
     img_data = request.get_data()
@@ -60,6 +61,7 @@ def process_video():
     return Response(response=processed_img_bytes, status=200, mimetype="image/jpeg")
 
 @app.route('/', methods=['GET'])
+@cross_origin(supports_credentials=True)
 def index():
     return render_template('index.html')
 

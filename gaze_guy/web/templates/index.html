@@ -1,70 +1,85 @@
+<!DOCTYPE html>
 <html>
-<head></head>
-<body>
-    <!-- OpenCV.js 4.5.5 版本 -->
-    <script src='https://docs.opencv.org/4.5.5/opencv.js'></script>
-    <script>
-        function sendImageToServer(imageData) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'http://localhost:9999/process_video', true);
-            xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-            xhr.onload = function() {
-              if (this.status === 200) {
-                console.log(this.response);
-              }
-            };
-            xhr.send(imageData);
-          }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            var but = document.getElementById("but");
-            var video = document.getElementById("vid");
-            var mediaDevices = navigator.mediaDevices;
-            vid.muted = true;
-            but.addEventListener("click", () => {
-
-                // Accessing the user camera and video.
-                mediaDevices
-                    .getUserMedia({
-                        video: true,
-                        audio: false,
-                    })
-                    .then((stream) => {
-
-                        // Changing the source of video to current stream.
-                        video.srcObject = stream;
-                        video.addEventListener("loadedmetadata", () => {
-                            video.play();
-                        });
-                        // opencv.js does not have this function
-                        //img_encoded = cv.imencode('.jpg', stream)
-                        sendImageToServer(stream)
-                    })
-                    .catch(alert);
-            });
-        });
-    </script>
-    <style>
-        div {
-            width: 500px;
-            height: 400px;
-            border: 2px solid black;
-            position: relative;
-        }
-
-        video {
-            width: 500px;
-            height: 400px;
-            object-fit: cover;
-        }
-    </style>
-    <div>
-        <video id="vid"></video>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Camera Live Feed Demo</title>
+  </head>
+  <body>
+   <div>
+       <video autoplay id="videoElement"></video>
+       <canvas id="canvas" style="display:none;"></canvas>
     </div>
-    <br />
-    <button id="but" autoplay>
-        Open WebCam
-    </button>
-</body>
+   
+   <button id="btn-start">开始摄像头</button>
+   <button id="btn-stop" disabled>停止摄像头</button>
+    
+   <script>
+      const videoElement = document.getElementById("videoElement");
+      const canvas = document.getElementById("canvas");
+      const startButton = document.getElementById("btn-start");
+      const stopButton = document.getElementById("btn-stop");
+      
+      const constraints = { video: true };
+      let videoStream;
 
+      function start() {
+        navigator.mediaDevices.getUserMedia(constraints)
+          .then(handleSuccess)
+          .catch(handleError);
+      }
+
+      function stop() {
+        videoStream.getTracks()[0].stop();
+        startButton.disabled = false;
+        stopButton.disabled = true;
+      }
+
+      function handleSuccess(stream) {
+        videoStream = stream;
+        videoElement.srcObject = stream;
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        
+        // 定义处理视频数据的函数
+        function processVideo() {
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+          canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+          const imgData = canvas.toDataURL('image/jpeg');
+          
+          // 发送POST请求将图像数据发送到Flask后端
+          fetch('http://localhost:9999/process_video', {
+            method: 'POST',
+            body: imgData,
+            headers: {
+              'Content-Type': 'image/jpeg'
+            }
+          })
+          .then(response => response.blob())
+          .then(processedImgBlob => {
+            // 将处理后的图像展示在页面上
+            const processedImg = URL.createObjectURL(processedImgBlob);
+            const img = document.createElement('img');
+            img.src = processedImg;
+            document.body.appendChild(img);
+          })
+          .catch(err => {
+            console.error('Error:', err);
+          });
+          
+          requestAnimationFrame(processVideo);
+        }
+        
+        // 开始处理视频数据
+        requestAnimationFrame(processVideo);
+      }
+
+      function handleError(error) {
+        console.error("Error: ", error);
+      }
+
+      startButton.onclick = start;
+      stopButton.onclick = stop;
+    </script>
+  </body>
 </html>
