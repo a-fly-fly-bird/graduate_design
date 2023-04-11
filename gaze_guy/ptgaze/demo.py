@@ -1,3 +1,4 @@
+from gaze_guy.kits.kalman import Kalman
 import datetime
 import logging
 import pathlib
@@ -20,7 +21,6 @@ from .utils import get_3d_face_model
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from gaze_guy.kits.kalman import Kalman
 
 class Demo(QThread):
     gazeEstimationSignal = pyqtSignal(np.ndarray)
@@ -60,11 +60,12 @@ class Demo(QThread):
             self._run_on_image()
         else:
             raise ValueError
-    
+
     def stop_thread(self):
         """Sets run flag to False and waits for thread to finish"""
         print('停止运行，开始输出日志记录')
-        f_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'gaze.json')
+        f_path = os.path.join(os.path.abspath(
+            os.path.dirname(os.path.dirname(__file__))), 'gaze.json')
         print(f_path)
         with open(f_path, 'w') as f:
             f.write(json.dumps(self.gaze_vector))
@@ -88,7 +89,13 @@ class Demo(QThread):
             cv2.imwrite(output_path.as_posix(), self.visualizer.image)
 
     def _run_on_video(self) -> None:
-        self.gaze_vector['record_time'] = time.strftime("%a %b %d %H:%M:%S %Y", time.localtime()) 
+        self.gaze_vector['record_time'] = time.strftime(
+            "%a %b %d %H:%M:%S %Y", time.localtime())
+        self.gaze_vector['data'].append({
+            'gaze': [0, 0],
+            'distracted': 'true',
+            'distracted_time': 0,
+        })
         while True:
             begin = time.time()
             if self.config.demo.display_on_screen:
@@ -105,14 +112,19 @@ class Demo(QThread):
                 now_data = self.gaze_vector['data'][-1]
                 end = time.time()
                 fps = 1 / (end - begin)
-                fps_s = f'FPS: {fps}'
+                fps_s = f'FPS: {fps:.2f}'
                 # https://blog.csdn.net/u013685264/article/details/121661895
                 cv_img_copy = self.visualizer.image.copy()
-                cv2.putText(cv_img_copy, fps_s, (200, 100), cv2.FONT_HERSHEY_COMPLEX, 2.0, (100, 200, 200), 5)
+                cv2.rectangle(cv_img_copy, pt1=(100, 75), pt2=(
+                    550, 400), color=(0, 0, 255), thickness=1)
+                cv2.putText(cv_img_copy, fps_s, (40, 40),
+                            cv2.FONT_HERSHEY_COMPLEX, 0.5, (100, 200, 200), 1)
                 if now_data['distracted']:
-                    cv2.putText(cv_img_copy, f'Distraction, {now_data["distracted_time"]}', (300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255,0,0), 2)
+                    cv2.putText(cv_img_copy, f'Distraction, {now_data["distracted_time"]}', (
+                        300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255, 0, 0), 2)
                 else:
-                    cv2.putText(cv_img_copy, f'Driving, {now_data["distracted_time"]}', (300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255,0,0), 2)
+                    cv2.putText(cv_img_copy, f'Driving, {now_data["distracted_time"]}', (
+                        300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255, 0, 0), 2)
                 self.gazeEstimationSignal.emit(cv_img_copy)
         self.cap.release()
         if self.writer:
@@ -125,14 +137,18 @@ class Demo(QThread):
 
         self.visualizer.set_image(image.copy())
         faces = self.gaze_estimator.detect_faces(undistorted)
-        for face in faces:
-            self.gaze_estimator.estimate_gaze(undistorted, face)
-            self._draw_face_bbox(face)
-            self._draw_head_pose(face)
-            self._draw_landmarks(face)
-            self._draw_face_template_model(face)
-            self._draw_gaze_vector(face)
-            self._display_normalized_image(face)
+        if faces:
+            for face in faces:
+                self.gaze_estimator.estimate_gaze(undistorted, face)
+                self._draw_face_bbox(face)
+                self._draw_head_pose(face)
+                self._draw_landmarks(face)
+                self._draw_face_template_model(face)
+                self._draw_gaze_vector(face)
+                self._display_normalized_image(face)
+        else:
+            self.gaze_vector['data'].append(
+                self.distractionJudgement.judge_by_area((12345, 12345)))
 
         if self.config.demo.use_camera:
             self.visualizer.image = self.visualizer.image[:, ::-1]
@@ -265,16 +281,18 @@ class Demo(QThread):
                 self.visualizer.draw_3d_line(
                     eye.center, eye.center + length * eye.gaze_vector)
                 pitch, yaw = np.rad2deg(eye.vector_to_angle(eye.gaze_vector))
-                logger.info(f'[{key.name.lower()} 未滤波的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
-                
+                logger.info(
+                    f'[{key.name.lower()} 未滤波的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+
                 # kalman filter module begin
                 after = self.my_kalman_filter.predict_and_update([pitch, yaw])
                 (pitch, yaw) = [float(i) for i in after][:2]
-                logger.info(f'[{key.name.lower()} 滤波后的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
+                logger.info(
+                    f'[{key.name.lower()} 滤波后的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
                 # kalman filter module end
-                self.gaze_vector['data'].append(self.distractionJudgement.judge_by_area((pitch, yaw)))
-                
-                
+                self.gaze_vector['data'].append(
+                    self.distractionJudgement.judge_by_area((pitch, yaw)))
+
         elif self.config.mode in ['MPIIFaceGaze', 'ETH-XGaze']:
             self.visualizer.draw_3d_line(
                 face.center, face.center + length * face.gaze_vector)

@@ -4,7 +4,7 @@ class DistractionJudgement:
     def __init__(self):
         self.distraction = False
         self.distraction_count = 0
-        self.distraction_threshold = 50
+        self.distraction_threshold = 2 # seconds
         self.distraction_duration = 0
         # self.distraction_duration_threshold = 1.0
         # self.distraction_duration_count = 0
@@ -16,7 +16,7 @@ class DistractionJudgement:
             self.distraction_duration += 1
         else:
             self.distraction_count = 0
-        if self.distraction_count > self.distraction_threshold:
+        if self.distraction_count > self.distraction_threshold * 30:
             self.distraction = True
         else:
             self.distraction = False
