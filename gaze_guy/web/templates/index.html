@@ -1,85 +1,91 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Camera Live Feed Demo</title>
-  </head>
-  <body>
-   <div>
-       <video autoplay id="videoElement"></video>
-       <canvas id="canvas" style="display:none;"></canvas>
-    </div>
-   
-   <button id="btn-start">开始摄像头</button>
-   <button id="btn-stop" disabled>停止摄像头</button>
-    
-   <script>
-      const videoElement = document.getElementById("videoElement");
-      const canvas = document.getElementById("canvas");
-      const startButton = document.getElementById("btn-start");
-      const stopButton = document.getElementById("btn-stop");
-      
-      const constraints = { video: true };
-      let videoStream;
-
-      function start() {
-        navigator.mediaDevices.getUserMedia(constraints)
-          .then(handleSuccess)
-          .catch(handleError);
-      }
-
-      function stop() {
-        videoStream.getTracks()[0].stop();
-        startButton.disabled = false;
-        stopButton.disabled = true;
-      }
-
-      function handleSuccess(stream) {
-        videoStream = stream;
-        videoElement.srcObject = stream;
-        startButton.disabled = true;
-        stopButton.disabled = false;
-        
-        // 定义处理视频数据的函数
-        function processVideo() {
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
-          canvas.getContext('2d').drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-          const imgData = canvas.toDataURL('image/jpeg');
-          
-          // 发送POST请求将图像数据发送到Flask后端
-          fetch('http://localhost:9999/process_video', {
-            method: 'POST',
-            body: imgData,
-            headers: {
-              'Content-Type': 'image/jpeg'
-            }
-          })
-          .then(response => response.blob())
-          .then(processedImgBlob => {
-            // 将处理后的图像展示在页面上
-            const processedImg = URL.createObjectURL(processedImgBlob);
-            const img = document.createElement('img');
-            img.src = processedImg;
-            document.body.appendChild(img);
-          })
-          .catch(err => {
-            console.error('Error:', err);
-          });
-          
-          requestAnimationFrame(processVideo);
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Image Processing</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
         }
-        
-        // 开始处理视频数据
-        requestAnimationFrame(processVideo);
-      }
 
-      function handleError(error) {
-        console.error("Error: ", error);
-      }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-      startButton.onclick = start;
-      stopButton.onclick = stop;
+        #video, #processedImg {
+            border: 1px solid black;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <video id="video" width="640" height="480" autoplay></video>
+        <img id="processedImg" alt="Processed Image" />
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const processedImg = document.getElementById('processedImg');
+        const interval = 1000; // Time interval in milliseconds
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    setInterval(sendFrame, interval);
+                }
+            })
+            .catch(err => {
+                console.error('Error accessing camera:', err);
+            });
+
+        async function sendFrame() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            const imgData = canvas.toDataURL('image/jpeg');
+            const blob = dataURLtoBlob(imgData);
+
+            try {
+                const processedImgData = await sendImageToBackend(blob);
+                processedImg.src = URL.createObjectURL(processedImgData);
+            } catch (err) {
+                console.error('Error sending image to backend:', err);
+            }
+        }
+
+        function dataURLtoBlob(dataURL) {
+            const binary = atob(dataURL.split(',')[1]);
+            const array = [];
+            for (let i = 0; i < binary.length; i++) {
+                array.push(binary.charCodeAt(i));
+            }
+            return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
+        }
+
+        async function sendImageToBackend(imgBlob) {
+            const response = await fetch('/process_video', {
+                method: 'POST',
+                body: imgBlob
+            });
+
+            if (response.ok) {
+                return response.blob();
+            } else {
+                throw new Error(`Error processing image: ${response.statusText}`);
+            }
+        }
     </script>
-  </body>
+</body>
 </html>

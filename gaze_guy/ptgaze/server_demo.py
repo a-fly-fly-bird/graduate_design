@@ -268,11 +268,11 @@ class Demo():
                 # kalman filter module begin
                 logger.info(f'[{key.name.lower()} 未滤波的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
                 my_kalman_filter = Kalman()
-                after = my_kalman_filter.predict([pitch, yaw])
+                after = my_kalman_filter.predict_and_update([pitch, yaw])
                 after = [float(i) for i in after][:2]
                 (pitch, yaw) = after
                 logger.info(f'[{key.name.lower()} 滤波后的结果:] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
-                # kalman filter module begin 
+                # kalman filter module begin
 
                 # logger.info(f'[{key.name.lower()}] pitch: {pitch:.2f}, yaw: {yaw:.2f}')
         elif self.config.mode in ['MPIIFaceGaze', 'ETH-XGaze']:
