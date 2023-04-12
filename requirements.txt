@@ -18,3 +18,4 @@ dlib
 fire
 seaborn
 flask
+flask_cors
