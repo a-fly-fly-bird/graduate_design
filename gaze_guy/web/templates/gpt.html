@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Image Processing</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #video, #processedImg {
+            border: 1px solid black;
+            max-width: 100%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SC2qJ5JqMxmUzvkgJ3M8wDgXcox3LEQE3Oxkj5L0ZUz+Irw6hjUw==" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="container">
+        <video id="video" width="640" height="480" autoplay></video>
+        <img id="processedImg" alt="Processed Image" />
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const processedImg = document.getElementById('processedImg');
+        const interval = 1000; // Time interval in milliseconds
+        const socket = io();
+
+        socket.on('receive_frame', data => {
+            const processedImgData = new Blob([data.image], {type: 'image/jpeg'});
+            processedImg.src = URL.createObjectURL(processedImgData);
+        });
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    setInterval(sendFrame, interval);
+                }
+            })
+            .catch(err => {
+            console.error('Error accessing camera:', err);
+            });
+
+        async function sendFrame() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            const imgData = canvas.toDataURL('image/jpeg');
+            const blob = dataURLtoBlob(imgData);
+            const reader = new FileReader();
+            reader.onload = function() {
+                const imgBuffer = new Uint8Array(reader.result);
+                socket.emit('send_frame', {image: imgBuffer});
+            }
+            reader.readAsArrayBuffer(blob);
+        }
+
+        function dataURLtoBlob(dataURL) {
+            const binary = atob(dataURL.split(',')[1]);
+            const array = [];
+            for (let i = 0; i < binary.length; i++) {
+                array.push(binary.charCodeAt(i));
+            }
+            return new Blob([new Uint8Array(array)], {type: 'image/jpeg'});
+        }
+</script>
+</body>
+</html>
