@@ -95,6 +95,7 @@ class Demo(QThread):
             'gaze': [0, 0],
             'distracted': 'true',
             'distracted_time': 0,
+            'timestamp': time.time()
         })
         while True:
             begin = time.time()

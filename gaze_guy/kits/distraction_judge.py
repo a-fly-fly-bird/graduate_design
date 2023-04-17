@@ -1,3 +1,4 @@
+import time
 import numpy as np
 
 class DistractionJudgement:
@@ -28,4 +29,5 @@ class DistractionJudgement:
         data['distracted'] = self.distraction
         data['distracted_time'] = int(self.distraction_count / 30)
         data['distraction_duration'] = self.distraction_duration
+        data['timestamp'] = time.time()
         return data
