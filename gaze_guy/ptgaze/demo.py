@@ -39,6 +39,8 @@ class Demo(QThread):
         self.output_dir = self._create_output_dir()
         self.writer = self._create_video_writer()
 
+        self.cnt = 0
+        self.dates = None
         self.stop = False
         self.show_bbox = self.config.demo.show_bbox
         self.show_head_pose = self.config.demo.show_head_pose
@@ -52,6 +54,9 @@ class Demo(QThread):
             "record_time": None,
             "data": []
         }
+        filename = '/Users/lucas/Documents/School/大四下/毕业设计/5. code/gaze_whl/dates.json'
+        with open(filename,'r') as file_object:
+            self.dates = json.load(file_object)
 
     def run(self) -> None:
         if self.config.demo.use_camera or self.config.demo.video_path:
@@ -92,11 +97,13 @@ class Demo(QThread):
         self.gaze_vector['record_time'] = time.strftime(
             "%a %b %d %H:%M:%S %Y", time.localtime())
         self.gaze_vector['data'].append({
+            'date': self.dates[self.cnt],
             'gaze': [0, 0],
-            'distracted': 'true',
-            'distracted_time': 0,
-            'timestamp': time.time()
+            # 'distracted': 'true',
+            # 'distracted_time': 0,
+            # 'timestamp': time.time()
         })
+        self.cnt += 1
         while True:
             begin = time.time()
             if self.config.demo.display_on_screen:
@@ -120,13 +127,16 @@ class Demo(QThread):
                     550, 400), color=(0, 0, 255), thickness=1)
                 cv2.putText(cv_img_copy, fps_s, (40, 40),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (100, 200, 200), 1)
-                if now_data['distracted']:
-                    cv2.putText(cv_img_copy, f'Distraction, {now_data["distracted_time"]}', (
-                        300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255, 0, 0), 2)
-                else:
-                    cv2.putText(cv_img_copy, f'Driving, {now_data["distracted_time"]}', (
-                        300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255, 0, 0), 2)
+                # if now_data['distracted']:
+                #     cv2.putText(cv_img_copy, f'Distraction, {now_data["distracted_time"]}', (
+                #         300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255, 0, 0), 2)
+                # else:
+                #     cv2.putText(cv_img_copy, f'Driving, {now_data["distracted_time"]}', (
+                #         300, 300), cv2.FONT_HERSHEY_COMPLEX, 1.0, (255, 0, 0), 2)
                 self.gazeEstimationSignal.emit(cv_img_copy)
+            f_path = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'gaze.json')
+            with open(f_path, 'w') as f:
+                f.write(json.dumps(self.gaze_vector))
         self.cap.release()
         if self.writer:
             self.writer.release()
