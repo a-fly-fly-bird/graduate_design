@@ -2,7 +2,7 @@ import os
 import json
 
 filenames = []
-filePath = '/Users/lucas/Downloads/01/face_img'
+filePath = '/Users/lucas/Downloads/A区驾驶分心图像采集数据/11/face_img'
 k = os.listdir(filePath)
 for filename in k:
     filenames.append(filename.replace(".jpg", ""))
