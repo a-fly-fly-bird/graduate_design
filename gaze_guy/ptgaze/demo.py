@@ -124,7 +124,7 @@ class Demo(QThread):
                 # https://blog.csdn.net/u013685264/article/details/121661895
                 cv_img_copy = self.visualizer.image.copy()
                 cv2.rectangle(cv_img_copy, pt1=(100, 75), pt2=(
-                    550, 400), color=(0, 0, 255), thickness=1)
+                    550, 400), color=(0, 0, 255), thickness=3)
                 cv2.putText(cv_img_copy, fps_s, (40, 40),
                             cv2.FONT_HERSHEY_COMPLEX, 0.5, (100, 200, 200), 1)
                 # if now_data['distracted']:
