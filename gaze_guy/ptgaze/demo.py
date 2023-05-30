@@ -87,7 +87,7 @@ class Demo(QThread):
                     break
                 if key_pressed:
                     self._process_image(image)
-                cv2.imshow('image', self.visualizer.image)
+                # cv2.imshow('image', self.visualizer.image)
         if self.config.demo.output_dir:
             name = pathlib.Path(self.config.demo.image_path).name
             output_path = pathlib.Path(self.config.demo.output_dir) / name
